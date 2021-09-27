@@ -80,9 +80,3 @@ func tlsConfigV12() *tls.Config {
 		MaxVersion:         tls.VersionTLS12,
 	}
 }
-
-// func tlsConfigDefault() *tls.Config {
-// 	return &tls.Config{
-// 		InsecureSkipVerify: true,
-// 	}
-// }

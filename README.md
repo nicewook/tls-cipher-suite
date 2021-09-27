@@ -1,4 +1,11 @@
-# TLS Cipher Suite
+# TLS version and Cipher Suites examples and tests
+
+Examples and tests to know how server and client negociate `TLS version` and `cipher suite`
+
+Blog post in Korean: https://jusths.tistory.com/238
+
+
+## FYI: How to make private key and cert on WSL2 in Windows10
 
 ```
 $ openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout server.key -out server.crt      
@@ -23,6 +30,5 @@ Common Name (e.g. server FQDN or YOUR name) []:
 Email Address []:
 ```
 
-https://gist.github.com/jim3ma/00523f865b8801390475c4e2049fe8c3
 
 
