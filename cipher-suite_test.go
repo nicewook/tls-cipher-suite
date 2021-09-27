@@ -14,7 +14,8 @@ func TestTLSCipherSuites(t *testing.T) {
 	doRequest := func(client *http.Client) {
 		res, err := client.Get("https://127.0.0.1:8443")
 		if err != nil {
-			t.Fatal(err)
+			t.Log(err)
+			return
 		}
 
 		body, err := ioutil.ReadAll(res.Body)
@@ -27,14 +28,13 @@ func TestTLSCipherSuites(t *testing.T) {
 		t.Logf("Body: %s\n", body)
 	}
 
-	var (
-		minVer       uint16
-		maxVer       uint16
-		cipherSuites []uint16
-	)
 	// test default
 	t.Run("Default TLS", func(t *testing.T) {
-
+		var (
+			minVer       uint16
+			maxVer       uint16
+			cipherSuites []uint16
+		)
 		server := NewTLSServer(minVer, maxVer, cipherSuites)
 		defer func() {
 			if err := server.Shutdown(context.TODO()); err != nil {
@@ -55,6 +55,11 @@ func TestTLSCipherSuites(t *testing.T) {
 
 	// test maxVersion TLS
 	t.Run("maxVersion TLSv1.2", func(t *testing.T) {
+		var (
+			minVer       uint16
+			maxVer       uint16
+			cipherSuites []uint16
+		)
 		maxVer = uint16(tls.VersionTLS12)
 		server := NewTLSServer(minVer, maxVer, cipherSuites)
 		defer func() {
@@ -76,6 +81,11 @@ func TestTLSCipherSuites(t *testing.T) {
 
 	// test client maxVersion TLSv1.0
 	t.Run("client maxVersion TLSv1.0", func(t *testing.T) {
+		var (
+			minVer       uint16
+			maxVer       uint16
+			cipherSuites []uint16
+		)
 		server := NewTLSServer(minVer, maxVer, cipherSuites)
 		defer func() {
 			if err := server.Shutdown(context.TODO()); err != nil {
@@ -91,6 +101,61 @@ func TestTLSCipherSuites(t *testing.T) {
 		time.Sleep(1 * time.Second)
 
 		client := NewTLSClient(tlsConfigV10())
+		doRequest(client)
+	})
+
+	// test specific CipherSuite
+	t.Run("server specific CipherSuite", func(t *testing.T) {
+		var (
+			minVer       uint16
+			maxVer       uint16
+			cipherSuites []uint16
+		)
+		minVer = tls.VersionTLS12
+		maxVer = tls.VersionTLS12
+		cipherSuites = []uint16{tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256}
+		server := NewTLSServer(minVer, maxVer, cipherSuites)
+		defer func() {
+			if err := server.Shutdown(context.TODO()); err != nil {
+				t.Error(err) // failure/timeout shutting down the server gracefully
+			}
+		}()
+		go func() {
+			if err := server.ListenAndServeTLS("server.crt", "server.key"); err != nil &&
+				err != http.ErrServerClosed {
+				t.Error(err)
+			}
+		}()
+		time.Sleep(1 * time.Second)
+
+		t.Log("expect: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256")
+		client := NewTLSClient(tlsConfigDefault())
+		doRequest(client)
+	})
+
+	// test client max version is lower then server
+	t.Run("client max version is lower then server", func(t *testing.T) {
+		var (
+			minVer       uint16
+			maxVer       uint16
+			cipherSuites []uint16
+		)
+		minVer = tls.VersionTLS13
+		server := NewTLSServer(minVer, maxVer, cipherSuites)
+		defer func() {
+			if err := server.Shutdown(context.TODO()); err != nil {
+				t.Error(err) // failure/timeout shutting down the server gracefully
+			}
+		}()
+		go func() {
+			if err := server.ListenAndServeTLS("server.crt", "server.key"); err != nil &&
+				err != http.ErrServerClosed {
+				t.Error(err)
+			}
+		}()
+		time.Sleep(1 * time.Second)
+
+		client := NewTLSClient(tlsConfigV12())
 		doRequest(client)
 	})
 }

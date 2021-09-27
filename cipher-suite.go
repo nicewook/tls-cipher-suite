@@ -19,7 +19,7 @@ var tlsVersionMap = map[uint16]string{
 }
 
 func simpleHandler(w http.ResponseWriter, req *http.Request) {
-	w.Write([]byte("This is an example server.\n"))
+	w.Write([]byte("This is an example server\n"))
 }
 
 func connStateHook(c net.Conn, state http.ConnState) {
@@ -71,6 +71,13 @@ func tlsConfigV10() *tls.Config {
 	return &tls.Config{
 		InsecureSkipVerify: true,
 		MaxVersion:         tls.VersionTLS10,
+	}
+}
+
+func tlsConfigV12() *tls.Config {
+	return &tls.Config{
+		InsecureSkipVerify: true,
+		MaxVersion:         tls.VersionTLS12,
 	}
 }
 
