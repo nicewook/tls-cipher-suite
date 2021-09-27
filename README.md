@@ -30,5 +30,8 @@ Common Name (e.g. server FQDN or YOUR name) []:
 Email Address []:
 ```
 
+## Reference
+
+- https://husobee.github.io/golang/tls/2016/01/27/golang-tls.html
 
 
